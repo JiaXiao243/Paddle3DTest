@@ -1,0 +1,77 @@
+
+
+
+data_path:
+    linux_data_path: /ssd2/ce_data/PaddleOCR/train_data
+    windows_data_path: E:\ce_data\PaddleOCR\train_data
+    mac_data_path: /Users/paddle/PaddleTest/ce_data/PaddleOCR/train_data 
+
+cmd:
+    det:
+       train: 'cd PaddleOCR; export CUDA_VISIBLE_DEVICES=0; python -m paddle.distributed.launch  tools/train.py --config configs/smoke/smoke_dla34_no_dcn_iter70000.yml --num_workers 2 --log_interval 50 --save_interval 5000'
+       get_pretrained_model: 'cd PaddleOCR; wget %s; tar xf %s.tar; rm -rf *.tar; mv %s_train %s;'
+       eval: 'cd PaddleOCR; python tools/eval.py -c %s  -o Global.use_gpu=%s Global.pretrained_model=./%s/best_accuracy'
+       infer: 'cd PaddleOCR; python tools/infer_det.py -c %s  -o Global.use_gpu=%s Global.pretrained_model=./%s/best_accuracy Global.infer_img="./doc/imgs_en/img_10.jpg" Global.test_batch_size_per_card=1'
+       export_model: 'cd PaddleOCR; python tools/export_model.py -c %s -o Global.use_gpu=%s Global.pretrained_model=./%s/best_accuracy Global.save_inference_dir=./models_inference/%s;'
+       predict: 'cd PaddleOCR; python tools/infer/predict_det.py --image_dir="./doc/imgs_en/img_10.jpg" --det_model_dir="./models_inference/"%s --det_algorithm=%s --use_gpu=%s --use_tensorrt=%s --enable_mkldnn=%s'
+    rec:
+       train: 'cd PaddleOCR; export CUDA_VISIBLE_DEVICES=0; sed -i s!data_lmdb_release/training!data_lmdb_release/validation!g %s; python -m paddle.distributed.launch --log_dir=log_%s  tools/train.py -c %s -o Global.use_gpu=%s Global.epoch_num=1 Global.save_epoch_step=1 Global.eval_batch_step=200 Global.print_batch_step=10 Global.save_model_dir=output/%s Train.loader.batch_size_per_card=10 Global.print_batch_step=1;' 
+       get_pretrained_model: 'cd PaddleOCR; wget %s; tar xf %s.tar; rm -rf *.tar; mv %s_train %s;' 
+       eval: 'cd Paddle3D; python tools/evaluate.py --config configs/smoke/smoke_dla34_no_dcn_iter70000.yml  --num_workers 2 --model https://bj.bcebos.com/paddle3d/models/smoke/smoke_dla34_no_dcn_iter70000/model.pdparams'
+       infer: 'cd Paddle3D; python infer.py --model_file /path/to/smoke.pdmodel --params_file /path/to/smoke.pdiparams --image /path/to/image --use_gpu'
+       export_model: 'cd Paddle3D; python tools/export.py --config configs/smoke/smoke_dla34_no_dcn_iter70000.yml --model https://bj.bcebos.com/paddle3d/models/smoke/smoke_dla34_no_dcn_iter70000/model.pdparams'
+       predict: 'cd Paddle3D; python tools/infer/predict_rec.py --image_dir="./doc/imgs_words_en/word_336.png" --rec_model_dir="./models_inference/"%s --rec_image_shape=%s --rec_algorithm=%s --rec_char_dict_path=%s --use_gpu=%s --use_tensorrt=%s --enable_mkldnn=%s;'
+    table:
+       train: 'cd PaddleOCR; export CUDA_VISIBLE_DEVICES=0; python -m paddle.distributed.launch tools/train.py -c %s -o Global.use_gpu=%s Global.epoch_num=1 Global.save_epoch_step=1 Global.eval_batch_step=200 Global.print_batch_step=10 Global.save_model_dir=output/%s Train.loader.batch_size_per_card=5 Global.print_batch_step=1 Train.dataset.data_dir=train_data/table/pubtabnet/val Train.dataset.label_file_list=[train_data/table/pubtabnet/val_500.jsonl]'
+       get_pretrained_model: 'cd PaddleOCR; wget %s; tar xf %s.tar; rm -rf *.tar; mv %s %s;'
+       eval: 'cd PaddleOCR; python tools/eval.py -c %s  -o Global.use_gpu=%s Global.pretrained_model=./%s/best_accuracy Eval.dataset.data_dir=train_data/table/pubtabnet/val Eval.loader.batch_size_per_card=20 Eval.dataset.label_file_list=[train_data/table/pubtabnet/val_500.jsonl]'
+       infer: 'cd PaddleOCR; python tools/infer_table.py -c %s  -o Global.use_gpu=%s Global.pretrained_model=./%s/best_accuracy;'
+       export_model: 'cd PaddleOCR; python tools/export_model.py -c %s -o Global.use_gpu=%s Global.pretrained_model=./%s/best_accuracy Global.save_inference_dir=./models_inference/%s;'
+       predict: 'cd PaddleOCR; python ppstructure/table/predict_structure.py --table_model_dir=./models_inference/%s --table_algorithm=TableMaster --table_char_dict_path=./ppocr/utils/dict/table_master_structure_dict.txt --table_max_len=480 --image_dir=ppstructure/docs/table/table.jpg --use_gpu=%s --use_tensorrt=%s --enable_mkldnn=%s'
+
+
+
+
+det_r50_db++_icdar15:
+    model_yaml: configs/det/det_r50_db++_icdar15.yml
+    paddle_train_acc: 
+    torch_train_acc: 
+    eval_pretrained_model: https://paddleocr.bj.bcebos.com/dygraph_v2.1/en_det/det_r50_db_plusplus_icdar15_train.tar
+    eval_hmean: 0.865
+    det_algorithm:  DB++
+    dataset: icdar15
+
+det_r50_db++_td_tr:
+    model_yaml: configs/det/det_r50_db++_td_tr.yml 
+    paddle_train_acc: 
+    torch_train_acc: 
+    eval_pretrained_model: https://paddleocr.bj.bcebos.com/dygraph_v2.1/en_det/det_r50_db_plusplus_td_tr_train.tar
+    eval_hmean: 0.895
+    det_algorithm:  DB++
+    dataset: td_tr
+
+rec_vitstr_none_ce:
+    model_yaml: configs/rec/rec_vitstr_none_ce.yml
+    paddle_train_acc: 0.8089 
+    torch_train_acc: 79.912
+    eval_pretrained_model: https://paddleocr.bj.bcebos.com/rec_vitstr_none_ce_train.tar 
+    eval_acc: 0.8093
+    rec_image_shape: 1,224,224
+    rec_algorithm: ViTSTR
+    rec_char_dict_path: ./ppocr/utils/EN_symbol_dict.txt
+    dataset: data_lmdb_release
+
+rec_r45_abinet:
+    model_yaml: configs/rec/rec_r45_abinet.yml
+    eval_pretrained_model: https://paddleocr.bj.bcebos.com/rec_r45_abinet_train.tar
+    eval_acc: 0.91580
+    rec_image_shape: 3,32,128
+    rec_algorithm: ABINet
+    rec_char_dict_path: ./ppocr/utils/ic15_dict.txt
+    dataset: data_lmdb_release
+
+table_master:
+   model_yaml:
+   eval_pretrained_model: https://paddleocr.bj.bcebos.com/ppstructure/models/tablemaster/table_structure_tablemaster_train.tar
+   eval_acc: 0.77
+   dataset: pubtabnet
