@@ -257,15 +257,7 @@ class TestOcrModelFunction():
          self.dataset=self.testcase_yml[self.model]['dataset']
 
       def test_ocr_train(self, use_gpu):
-          # cmd='cd PaddleOCR; export CUDA_VISIBLE_DEVICES=0; sed -i s!data_lmdb_release/training!data_lmdb_release/validation!g %s; python -m paddle.distributed.launch --log_dir=log_%s  tools/train.py -c %s -o Global.use_gpu=%s Global.epoch_num=1 Global.save_epoch_step=1 Global.eval_batch_step=200 Global.print_batch_step=10 Global.save_model_dir=output/%s Train.loader.batch_size_per_card=10 Global.print_batch_step=1;' % (self.yaml,  self.model, self.yaml, use_gpu, self.model)
-          if self.category=='rec':
-             cmd=self.testcase_yml['cmd'][self.category]['train'] % (self.yaml,  self.model, self.yaml, use_gpu, self.model)
-          elif self.category=='det':
-             cmd=self.testcase_yml['cmd'][self.category]['train'] % (self.yaml, use_gpu, self.model)
-          elif self.category=='table':
-             cmd=self.testcase_yml['cmd'][self.category]['train'] % (self.yaml, use_gpu, self.model)
-          else:
-             pass
+          cmd='cd PaddleOCR; export CUDA_VISIBLE_DEVICES=0; sed -i s!data_lmdb_release/training!data_lmdb_release/validation!g %s; python -m paddle.distributed.launch --log_dir=log_%s  tools/train.py -c %s -o Global.use_gpu=%s Global.epoch_num=1 Global.save_epoch_step=1 Global.eval_batch_step=200 Global.print_batch_step=10 Global.save_model_dir=output/%s Train.loader.batch_size_per_card=10 Global.print_batch_step=1;' % (self.yaml,  self.model, self.yaml, use_gpu, self.model)
 
 
           if(platform.system() == "Windows"):
